@@ -33,6 +33,7 @@ namespace Wirecard\ElasticEngine\Model\Ui;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Checkout\Model\Session;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Locale\Resolver;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Asset\Repository;
@@ -88,6 +89,8 @@ class ConfigProvider implements ConfigProviderInterface
      */
     protected $urlBuilder;
 
+    protected $scopeConfig;
+
     /**
      * ConfigProvider constructor.
      * @param TransactionServiceFactory $transactionServiceFactory
@@ -95,8 +98,10 @@ class ConfigProvider implements ConfigProviderInterface
      * @param Data $paymentHelper
      * @param Session $session
      * @param Resolver $store
+     * @param UrlInterface $urlBuilder
+     * @param ScopeConfigInterface $scopeConfig
      */
-    public function __construct(TransactionServiceFactory $transactionServiceFactory, Repository $assetRepo, Data $paymentHelper, Session $session, Resolver $store, UrlInterface $urlBuilder)
+    public function __construct(TransactionServiceFactory $transactionServiceFactory, Repository $assetRepo, Data $paymentHelper, Session $session, Resolver $store, UrlInterface $urlBuilder, ScopeConfigInterface $scopeConfig)
     {
         $this->transactionServiceFactory = $transactionServiceFactory;
         $this->assetRepository = $assetRepo;
@@ -104,6 +109,7 @@ class ConfigProvider implements ConfigProviderInterface
         $this->checkoutSession = $session;
         $this->store = $store;
         $this->urlBuilder = $urlBuilder;
+        $this->scopeConfig = $scopeConfig;
     }
 
     /**
@@ -183,10 +189,14 @@ class ConfigProvider implements ConfigProviderInterface
         $amount = new Amount($quote->getGrandTotal(), $quote->getQuoteCurrencyCode());
         $wdBaseUrl = $this->urlBuilder->getRouteUrl('wirecard_elasticengine');
         $notify = $wdBaseUrl . 'frontend/notify';
-        return [
+        $transactionType = $this->scopeConfig->getValue('payment/wirecard_elasticengine_creditcard/payment_action', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+		if ('authorize_capture' == $transactionType) {
+			$transactionType = 'purchase';
+		}
+	    return [
             $paymentMethodName => [
                 'logo_url' => $this->getLogoUrl($paymentMethodName),
-                'seamless_request_data' => json_decode($transactionService->getDataForCreditCardUi($locale, $amount, $notify), true)
+                'seamless_request_data' => json_decode($transactionService->getDataForCreditCardUi($locale, $amount, $notify, $transactionType), true)
             ]
         ];
     }
