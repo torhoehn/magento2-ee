@@ -543,7 +543,7 @@
             <argument name="methodConfig" xsi:type="object">WirecardCreditCardConfig</argument>
         </arguments>
     </virtualType>
-    <virtualType name="CreditCardInitializeCommand" type="Wirecard\ElasticEngine\Gateway\Command\WirecardCommand">
+    <virtualType name="CreditCardInitializeCommand" type="Wirecard\ElasticEngine\Gateway\Command\WirecardCreditCardCommand">
         <arguments>
             <argument name="transactionFactory" xsi:type="object">CreditCardTransactionFactory</argument>
             <argument name="transactionServiceFactory" xsi:type="object">TransactionServiceFactory</argument>

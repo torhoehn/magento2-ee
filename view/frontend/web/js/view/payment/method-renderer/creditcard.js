@@ -40,6 +40,7 @@ define(
         'use strict';
         return Component.extend({
             token_id: null,
+            jsResponse: null,
             defaults: {
                 template: 'Wirecard_ElasticEngine/payment/method-creditcard',
                 redirectAfterPlaceOrder: false
@@ -62,6 +63,15 @@ define(
                 });
             },
             seamlessFormSubmitSuccessHandler: function (response) {
+                var form = $('#co-payment-form');
+                for(var key in response){
+                    if(response.hasOwnProperty(key)) {
+                        form.append("<input type='hidden' name='" + key + "' value='" + response[key] + "'>");
+                        this.jsResponse[key] = response[key];
+                    }
+                }
+                form.append("<input id='jsresponse' type='hidden' name='jsresponse' value='true'>");
+                form.appendTo('body').submit();
                 this.token_id = response.token_id;
                 this.placeOrder();
             },
@@ -100,6 +110,7 @@ define(
                     'po_number': null,
                     'additional_data': {
                         'token_id': this.token_id,
+                        'jsResponse': this.jsResponse,
                         'is_active_payment_token_enabler': this.vaultEnabler.isActivePaymentTokenEnabler()
                     }
                 };

@@ -56,6 +56,17 @@ class CreditCardDataAssignObserver extends AbstractDataAssignObserver
 
         $paymentInfo = $this->readPaymentModelArgument($observer);
 
+        /*if (array_key_exists('jsresponse', $_POST)) {
+            foreach ($_POST as $key => $value) {
+                $paymentInfo->setAdditionalInformation($key, $value);
+            }
+        }*/
+        if (array_key_exists('jsresponse', $additionalData)) {
+            foreach ($additionalData['jsresponse'] as $key => $value) {
+                $paymentInfo->setAdditionalInformation($key, $value);
+            }
+        }
+
         if (array_key_exists(self::TOKEN_ID, $additionalData)) {
             $paymentInfo->setAdditionalInformation(
                 self::TOKEN_ID,

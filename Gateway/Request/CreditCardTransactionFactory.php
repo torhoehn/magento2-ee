@@ -91,24 +91,9 @@ class CreditCardTransactionFactory extends TransactionFactory
 
         /** @var PaymentDataObjectInterface $payment */
         $paymentDO = $commandSubject[self::PAYMENT];
-        $this->transaction->setTokenId($paymentDO->getPayment()->getAdditionalInformation(CreditCardDataAssignObserver::TOKEN_ID));
+        $jsResponse = $paymentDO->getPayment()->getAdditionalInformation();
 
-        $customFields = new CustomFieldCollection();
-        $customFields->add(new CustomField('orderId', $this->orderId));
-        if ($paymentDO->getPayment()->getAdditionalInformation(CreditCardDataAssignObserver::VAULT_ENABLER)) {
-            $customFields->add(new CustomField('vaultEnabler', $paymentDO->getPayment()->getAdditionalInformation(CreditCardDataAssignObserver::VAULT_ENABLER)));
-        }
-
-        if ($paymentDO->getPayment()->getAdditionalInformation(CreditCardDataAssignObserver::RECURRING)) {
-            $this->transaction->setThreeD(false);
-        }
-
-        $this->transaction->setCustomFields($customFields);
-
-        $wdBaseUrl = $this->urlBuilder->getRouteUrl('wirecard_elasticengine');
-        $this->transaction->setTermUrl($wdBaseUrl . 'frontend/redirect');
-
-        return $this->transaction;
+        return $jsResponse;
     }
 
     /**
@@ -157,5 +142,11 @@ class CreditCardTransactionFactory extends TransactionFactory
     public function getRefundOperation()
     {
         return self::REFUND_OPERATION;
+    }
+
+    public function getTransactionName()
+    {
+        $transaction = $this->transaction;
+        return $transaction::NAME;
     }
 }
