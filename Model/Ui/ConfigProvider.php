@@ -33,6 +33,7 @@ namespace Wirecard\ElasticEngine\Model\Ui;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Checkout\Model\Session;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Locale\Resolver;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Asset\Repository;
@@ -41,7 +42,6 @@ use Magento\Quote\Model\Quote;
 use Wirecard\ElasticEngine\Gateway\Service\TransactionServiceFactory;
 use Wirecard\PaymentSdk\Entity\Amount;
 use Wirecard\PaymentSdk\Entity\IdealBic;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 
 class ConfigProvider implements ConfigProviderInterface
 {
@@ -189,8 +189,11 @@ class ConfigProvider implements ConfigProviderInterface
         $amount = new Amount($quote->getGrandTotal(), $quote->getQuoteCurrencyCode());
         $wdBaseUrl = $this->urlBuilder->getRouteUrl('wirecard_elasticengine');
         $notify = $wdBaseUrl . 'frontend/notify';
-        $transactionType = $this->scopeConfig->getValue('payment/wirecard_elasticengine_creditcard/payment_action');
-        return [
+        $transactionType = $this->scopeConfig->getValue('payment/wirecard_elasticengine_creditcard/payment_action', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+		if ('authorize_capture' == $transactionType) {
+			$transactionType = 'purchase';
+		}
+	    return [
             $paymentMethodName => [
                 'logo_url' => $this->getLogoUrl($paymentMethodName),
                 'seamless_request_data' => json_decode($transactionService->getDataForCreditCardUi($locale, $amount, $notify, $transactionType), true)
