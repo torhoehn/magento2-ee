@@ -34,9 +34,12 @@ namespace Wirecard\ElasticEngine\Model\Ui;
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Locale\Resolver;
+use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Asset\Repository;
 use Magento\Payment\Helper\Data;
+use Magento\Quote\Model\Quote;
 use Wirecard\ElasticEngine\Gateway\Service\TransactionServiceFactory;
+use Wirecard\PaymentSdk\Entity\Amount;
 use Wirecard\PaymentSdk\Entity\IdealBic;
 
 class ConfigProvider implements ConfigProviderInterface
@@ -81,6 +84,11 @@ class ConfigProvider implements ConfigProviderInterface
     private $store;
 
     /**
+     * @var UrlInterface
+     */
+    protected $urlBuilder;
+
+    /**
      * ConfigProvider constructor.
      * @param TransactionServiceFactory $transactionServiceFactory
      * @param Repository $assetRepo
@@ -88,13 +96,14 @@ class ConfigProvider implements ConfigProviderInterface
      * @param Session $session
      * @param Resolver $store
      */
-    public function __construct(TransactionServiceFactory $transactionServiceFactory, Repository $assetRepo, Data $paymentHelper, Session $session, Resolver $store)
+    public function __construct(TransactionServiceFactory $transactionServiceFactory, Repository $assetRepo, Data $paymentHelper, Session $session, Resolver $store, UrlInterface $urlBuilder)
     {
         $this->transactionServiceFactory = $transactionServiceFactory;
         $this->assetRepository = $assetRepo;
         $this->paymentHelper = $paymentHelper;
         $this->checkoutSession = $session;
         $this->store = $store;
+        $this->urlBuilder = $urlBuilder;
     }
 
     /**
@@ -106,8 +115,8 @@ class ConfigProvider implements ConfigProviderInterface
     {
         return [
             'payment' => $this->getConfigForPaymentMethod(self::PAYPAL_CODE) +
-                $this->getConfigForCreditCardWithVault(self::CREDITCARD_CODE) +
-                $this->getConfigForCreditCard(self::MAESTRO_CODE) +
+                $this->getConfigForCreditCardWithVault(self::CREDITCARD_CODE, $this->checkoutSession->getQuote()) +
+                $this->getConfigForCreditCard(self::MAESTRO_CODE, $this->checkoutSession->getQuote()) +
                 $this->getConfigForSepa(self::SEPA_CODE) +
                 $this->getConfigForPaymentMethod(self::SOFORT_CODE) +
                 $this->getConfigForPaymentMethod(self::IDEAL_CODE) +
@@ -116,7 +125,7 @@ class ConfigProvider implements ConfigProviderInterface
                 $this->getConfigForPaymentMethod(self::ALIPAYXBORDER_CODE) +
                 $this->getConfigForPaymentMethod(self::POIPIA_CODE) +
                 $this->getConfigForPaymentMethod(self::MASTERPASS_CODE) +
-                $this->getConfigForUpi(self::UPI_CODE)
+                $this->getConfigForUpi(self::UPI_CODE, $this->checkoutSession->getQuote())
         ];
     }
 
@@ -164,16 +173,20 @@ class ConfigProvider implements ConfigProviderInterface
 
     /**
      * @param $paymentMethodName
+     * @param Quote $quote
      * @return array
      */
-    private function getConfigForCreditCard($paymentMethodName)
+    private function getConfigForCreditCard($paymentMethodName, $quote)
     {
         $locale = $this->store->getLocale();
         $transactionService = $this->transactionServiceFactory->create('creditcard');
+        $amount = new Amount($quote->getGrandTotal(), $quote->getQuoteCurrencyCode());
+        $wdBaseUrl = $this->urlBuilder->getRouteUrl('wirecard_elasticengine');
+        $notify = $wdBaseUrl . 'frontend/notify';
         return [
             $paymentMethodName => [
                 'logo_url' => $this->getLogoUrl($paymentMethodName),
-                'seamless_request_data' => json_decode($transactionService->getDataForCreditCardUi($locale), true)
+                'seamless_request_data' => json_decode($transactionService->getDataForCreditCardUi($locale, $amount, $notify), true)
             ]
         ];
     }
@@ -182,14 +195,17 @@ class ConfigProvider implements ConfigProviderInterface
      * @param $paymentMethodName
      * @return array
      */
-    private function getConfigForCreditCardWithVault($paymentMethodName)
+    private function getConfigForCreditCardWithVault($paymentMethodName, $quote)
     {
         $locale = $this->store->getLocale();
         $transactionService = $this->transactionServiceFactory->create('creditcard');
+        $amount = new Amount($quote->getGrandTotal(), $quote->getQuoteCurrencyCode());
+        $wdBaseUrl = $this->urlBuilder->getRouteUrl('wirecard_elasticengine');
+        $notify = $wdBaseUrl . 'frontend/notify';
         return [
             $paymentMethodName => [
                 'logo_url' => $this->getLogoUrl($paymentMethodName),
-                'seamless_request_data' => json_decode($transactionService->getDataForCreditCardUi($locale), true),
+                'seamless_request_data' => json_decode($transactionService->getDataForCreditCardUi($locale, $amount, $notify), true),
                 'vaultCode' => ConfigProvider::CREDITCARD_VAULT_CODE
             ]
         ];
@@ -199,14 +215,17 @@ class ConfigProvider implements ConfigProviderInterface
      * @param $paymentMethodName
      * @return array
      */
-    private function getConfigForUpi($paymentMethodName)
+    private function getConfigForUpi($paymentMethodName, $quote)
     {
         $locale = $this->store->getLocale();
         $transactionService = $this->transactionServiceFactory->create('unionpayinternational');
+        $amount = new Amount($quote->getGrandTotal(), $quote->getQuoteCurrencyCode());
+        $wdBaseUrl = $this->urlBuilder->getRouteUrl('wirecard_elasticengine');
+        $notify = $wdBaseUrl . 'frontend/notify';
         return [
             $paymentMethodName => [
                 'logo_url' => $this->getLogoUrl($paymentMethodName),
-                'seamless_request_data' => json_decode($transactionService->getDataForUpiUi($locale), true)
+                'seamless_request_data' => json_decode($transactionService->getDataForUpiUi($locale, $amount, $notify), true)
             ]
         ];
     }
