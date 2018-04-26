@@ -37,6 +37,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Controller\Result\Redirect as RedirectResult;
 use Magento\Framework\Controller\ResultFactory;
+use Psr\Log\LoggerInterface;
 use Wirecard\ElasticEngine\Gateway\Service\TransactionServiceFactory;
 use Wirecard\PaymentSdk\Response\SuccessResponse;
 use Wirecard\PaymentSdk\Transaction\CreditCardTransaction;
@@ -64,15 +65,22 @@ class Redirect extends Action
     private $transactionServiceFactory;
 
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * Redirect constructor.
      * @param Context $context
      * @param Session $checkoutSession
      * @param TransactionServiceFactory $transactionServiceFactory
+     * @param LoggerInterface $logger
      */
-    public function __construct(Context $context, Session $checkoutSession, TransactionServiceFactory $transactionServiceFactory)
+    public function __construct(Context $context, Session $checkoutSession, TransactionServiceFactory $transactionServiceFactory, LoggerInterface $logger)
     {
         $this->checkoutSession = $checkoutSession;
         $this->transactionServiceFactory = $transactionServiceFactory;
+        $this->logger = $logger;
         parent::__construct($context);
     }
 
@@ -85,7 +93,16 @@ class Redirect extends Action
          * @var $resultRedirect RedirectResult
          */
         $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
-        if ($this->getRequest()->isPost()) {
+        $this->logger->error(print_r($this->getRequest()->getPost(), true));
+        if ($this->getRequest()->isGet() && $this->getRequest()->getParam('creditcard')) {
+            if ('success' == $this->getRequest()->getParam('creditcard')) {
+                $this->setRedirectPath($resultRedirect, 'checkout/onepage/success');
+            } else {
+                $this->checkoutSession->restoreQuote();
+                $this->messageManager->addNoticeMessage(__(self::PAYMENT_ERROR));
+                $this->setRedirectPath($resultRedirect, self::CHECKOUT_URL);
+            }
+        } elseif ($this->getRequest()->isPost()) {
             $method = $this->getPaymentMethod($this->getRequest()->getPost()->toArray());
             $transactionService = $this->transactionServiceFactory->create($method);
             $result = $transactionService->handleResponse($this->getRequest()->getPost()->toArray());

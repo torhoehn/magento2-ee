@@ -113,10 +113,10 @@ class CreditCardResponseHandler implements HandlerInterface
 
             $this->setTransaction($payment, $sdkResponse);
         } elseif ($sdkResponse instanceof SuccessResponse) {
-            $wdBaseUrl = $this->urlBuilder->getRouteUrl('wirecard_elasticengine');
-            $this->session->setRedirectUrl($wdBaseUrl . 'frontend/redirect');
-
             $this->setTransaction($payment, $sdkResponse);
+
+            $wdBaseUrl = $this->urlBuilder->getRouteUrl('wirecard_elasticengine');
+            $this->session->setRedirectUrl($wdBaseUrl . 'frontend/redirect?creditcard=success');
         } elseif ($sdkResponse instanceof FailureResponse) {
             foreach ($sdkResponse->getStatusCollection() as $status) {
                 /** @var $status Status */

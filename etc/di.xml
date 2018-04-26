@@ -568,7 +568,7 @@
             </argument>
         </arguments>
     </virtualType>
-    <virtualType name="MaestroInitializeCommand" type="Wirecard\ElasticEngine\Gateway\Command\WirecardCommand">
+    <virtualType name="MaestroInitializeCommand" type="Wirecard\ElasticEngine\Gateway\Command\WirecardCreditCardCommand">
         <arguments>
             <argument name="transactionFactory" xsi:type="object">CreditCardTransactionFactory</argument>
             <argument name="transactionServiceFactory" xsi:type="object">TransactionServiceFactory</argument>
@@ -874,7 +874,7 @@
             <argument name="methodConfig" xsi:type="object">WirecardUnionPayInternationalConfig</argument>
         </arguments>
     </virtualType>
-    <virtualType name="UnionPayInternationalInitializeCommand" type="Wirecard\ElasticEngine\Gateway\Command\WirecardCommand">
+    <virtualType name="UnionPayInternationalInitializeCommand" type="Wirecard\ElasticEngine\Gateway\Command\WirecardCreditCardCommand">
         <arguments>
             <argument name="transactionFactory" xsi:type="object">UnionPayInternationalTransactionFactory</argument>
             <argument name="transactionServiceFactory" xsi:type="object">TransactionServiceFactory</argument>
