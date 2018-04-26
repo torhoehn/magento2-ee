@@ -547,7 +547,7 @@
         <arguments>
             <argument name="transactionFactory" xsi:type="object">CreditCardTransactionFactory</argument>
             <argument name="transactionServiceFactory" xsi:type="object">TransactionServiceFactory</argument>
-            <argument name="handler" xsi:type="object">Wirecard\ElasticEngine\Gateway\Response\ResponseHandler</argument>
+            <argument name="handler" xsi:type="object">Wirecard\ElasticEngine\Gateway\Response\CreditCardResponseHandler</argument>
             <argument name="methodConfig" xsi:type="object">WirecardCreditCardConfig</argument>
         </arguments>
     </virtualType>

@@ -63,15 +63,12 @@ define(
                 });
             },
             seamlessFormSubmitSuccessHandler: function (response) {
-                var form = $('#co-payment-form');
+                this.jsResponse = {};
                 for(var key in response){
                     if(response.hasOwnProperty(key)) {
-                        form.append("<input type='hidden' name='" + key + "' value='" + response[key] + "'>");
                         this.jsResponse[key] = response[key];
                     }
                 }
-                form.append("<input id='jsresponse' type='hidden' name='jsresponse' value='true'>");
-                form.appendTo('body').submit();
                 this.token_id = response.token_id;
                 this.placeOrder();
             },
@@ -108,11 +105,7 @@ define(
                 return {
                     'method': this.getCode(),
                     'po_number': null,
-                    'additional_data': {
-                        'token_id': this.token_id,
-                        'jsResponse': this.jsResponse,
-                        'is_active_payment_token_enabler': this.vaultEnabler.isActivePaymentTokenEnabler()
-                    }
+                    'additional_data': this.jsResponse
                 };
             },
             selectPaymentMethod: function () {
@@ -137,8 +130,10 @@ define(
             afterPlaceOrder: function () {
                 $.get(url.build("wirecard_elasticengine/frontend/callback"), function (data) {
                     if (data['form-url']) {
-                        var form = $('<form />', {action: data['form-url'], method: data['form-method']});
-
+                        var url = data['form-url'];
+                        //decoded url leads to invalid request, url leads to wrong redirect
+                        var decoded_url = url.replace(/&#47;/g, '/');
+                        var form = $('<form />', {action: decoded_url, method: data['form-method']});
                         for (var i = 0; i < data['form-fields'].length; i++) {
                             form.append($('<input />', {
                                 type: 'hidden',
@@ -152,7 +147,6 @@ define(
                     }
                 });
             },
-
             /**
              * @returns {String}
              */

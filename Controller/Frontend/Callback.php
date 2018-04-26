@@ -36,6 +36,7 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\ResultFactory;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class Callback
@@ -54,16 +55,19 @@ class Callback extends Action
      * @var string
      */
     private $baseUrl;
+
+    private $logger;
     /**
      * Callback constructor.
      * @param Context $context
      * @param Session $session
      */
-    public function __construct(Context $context, Session $session)
+    public function __construct(Context $context, Session $session, LoggerInterface $logger)
     {
         parent::__construct($context);
         $this->session = $session;
         $this->baseUrl = $context->getUrl()->getRouteUrl('wirecard_elasticengine');
+        $this->logger = $logger;
     }
 
     /**

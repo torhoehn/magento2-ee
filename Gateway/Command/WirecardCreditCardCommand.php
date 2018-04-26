@@ -124,9 +124,7 @@ class WirecardCreditCardCommand implements CommandInterface
         $redirect = $wdBaseUrl . 'frontend/redirect';
 
         try {
-            $this->logger->error('Before processJs ' . print_r($jsResponse));
             $response = $transactionService->processJsResponse($jsResponse, $redirect);
-            $this->logger->error('Nach processJS');
         } catch (\Exception $exception) {
             $this->logger->error($exception->getMessage());
             $response = null;

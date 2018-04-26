@@ -188,7 +188,7 @@ class ConfigProvider implements ConfigProviderInterface
         $transactionService = $this->transactionServiceFactory->create('creditcard');
         $amount = new Amount($quote->getGrandTotal(), $quote->getQuoteCurrencyCode());
         $wdBaseUrl = $this->urlBuilder->getRouteUrl('wirecard_elasticengine');
-        $notify = $wdBaseUrl . 'frontend/notify';
+        $notify = $wdBaseUrl . 'frontend/redirect';
         $transactionType = $this->scopeConfig->getValue('payment/wirecard_elasticengine_creditcard/payment_action', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 		if ('authorize_capture' == $transactionType) {
 			$transactionType = 'purchase';
