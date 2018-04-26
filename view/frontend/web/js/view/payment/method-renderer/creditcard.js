@@ -135,6 +135,11 @@ define(
                         var decoded_url = url.replace(/&#47;/g, '/');
                         var form = $('<form />', {action: decoded_url, method: data['form-method']});
                         for (var i = 0; i < data['form-fields'].length; i++) {
+                            if ('PaReq' == data['form-fields'][i]['key']) {
+                                var pareq = data['form-fields'][i]['value'];
+                                var decoded_pareq = pareq.replace(/&#47;/g, '/');
+                                data['form-fields'][i]['value'] = decoded_pareq;
+                            }
                             form.append($('<input />', {
                                 type: 'hidden',
                                 name: data['form-fields'][i]['key'],
@@ -143,6 +148,7 @@ define(
                         }
                         form.appendTo('body').submit();
                     } else {
+                        console.log(data['redirect-url']);
                         window.location.replace(data['redirect-url']);
                     }
                 });
