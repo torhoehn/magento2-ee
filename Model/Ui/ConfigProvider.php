@@ -119,10 +119,13 @@ class ConfigProvider implements ConfigProviderInterface
      */
     public function getConfig()
     {
+        if($this->checkoutSession->getQuote() instanceof Quote && !$this->checkoutSession->getQuote()->getReservedOrderId()) {
+            $this->checkoutSession->getQuote()->reserveOrderId();
+        }
         return [
             'payment' => $this->getConfigForPaymentMethod(self::PAYPAL_CODE) +
-                $this->getConfigForCreditCardWithVault(self::CREDITCARD_CODE, $this->checkoutSession->getQuote()) +
-                $this->getConfigForCreditCard(self::MAESTRO_CODE, $this->checkoutSession->getQuote()) +
+                $this->getConfigForCreditCardWithVault(self::CREDITCARD_CODE) +
+                $this->getConfigForCreditCard(self::MAESTRO_CODE) +
                 $this->getConfigForSepa(self::SEPA_CODE) +
                 $this->getConfigForPaymentMethod(self::SOFORT_CODE) +
                 $this->getConfigForPaymentMethod(self::IDEAL_CODE) +
@@ -131,7 +134,7 @@ class ConfigProvider implements ConfigProviderInterface
                 $this->getConfigForPaymentMethod(self::ALIPAYXBORDER_CODE) +
                 $this->getConfigForPaymentMethod(self::POIPIA_CODE) +
                 $this->getConfigForPaymentMethod(self::MASTERPASS_CODE) +
-                $this->getConfigForUpi(self::UPI_CODE, $this->checkoutSession->getQuote())
+                $this->getConfigForUpi(self::UPI_CODE)
         ];
     }
 
@@ -182,21 +185,27 @@ class ConfigProvider implements ConfigProviderInterface
      * @param Quote $quote
      * @return array
      */
-    private function getConfigForCreditCard($paymentMethodName, $quote)
+    private function getConfigForCreditCard($paymentMethodName)
     {
         $locale = $this->store->getLocale();
         $transactionService = $this->transactionServiceFactory->create('creditcard');
-        $amount = new Amount($quote->getGrandTotal(), $quote->getQuoteCurrencyCode());
         $wdBaseUrl = $this->urlBuilder->getRouteUrl('wirecard_elasticengine');
         $notify = $wdBaseUrl . 'frontend/notify';
-        $transactionType = $this->scopeConfig->getValue('payment/wirecard_elasticengine_creditcard/payment_action', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-		if ('authorize_capture' == $transactionType) {
-			$transactionType = 'purchase';
-		}
+        $amount = null;
+        $additional = [];
+
+        if($this->checkoutSession->getQuote() instanceof Quote) {
+            $amount = new Amount(
+                $this->checkoutSession->getQuote()->getGrandTotal(),
+                $this->checkoutSession->getQuote()->getQuoteCurrencyCode()
+            );
+            $additional = ['orderId' => $this->checkoutSession->getQuote()->getReservedOrderId()];
+        }
+
 	    return [
             $paymentMethodName => [
                 'logo_url' => $this->getLogoUrl($paymentMethodName),
-                'seamless_request_data' => json_decode($transactionService->getDataForCreditCardUi($locale, $amount, $notify, $transactionType), true)
+                'seamless_request_data' => json_decode($transactionService->getDataForCreditCardUi($locale, $amount, $notify, 'authorization', $additional), true)
             ]
         ];
     }
@@ -205,17 +214,33 @@ class ConfigProvider implements ConfigProviderInterface
      * @param $paymentMethodName
      * @return array
      */
-    private function getConfigForCreditCardWithVault($paymentMethodName, $quote)
+    private function getConfigForCreditCardWithVault($paymentMethodName)
     {
         $locale = $this->store->getLocale();
         $transactionService = $this->transactionServiceFactory->create('creditcard');
-        $amount = new Amount($quote->getGrandTotal(), $quote->getQuoteCurrencyCode());
         $wdBaseUrl = $this->urlBuilder->getRouteUrl('wirecard_elasticengine');
         $notify = $wdBaseUrl . 'frontend/notify';
+        $amount = null;
+        $additional = [];
+
+        if($this->checkoutSession->getQuote() instanceof Quote) {
+            $amount = new Amount(
+                $this->checkoutSession->getQuote()->getGrandTotal(),
+                $this->checkoutSession->getQuote()->getQuoteCurrencyCode()
+            );
+            $additional = ['orderId' => $this->checkoutSession->getQuote()->getReservedOrderId()];
+        }
+
+        $paymentAction = $this->scopeConfig->getValue('payment/wirecard_elasticengine_creditcard/payment_action', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        if ('authorize_capture' == $paymentAction) {
+            $paymentAction = 'purchase';
+        } else {
+            $paymentAction = 'authorization';
+        }
         return [
             $paymentMethodName => [
                 'logo_url' => $this->getLogoUrl($paymentMethodName),
-                'seamless_request_data' => json_decode($transactionService->getDataForCreditCardUi($locale, $amount, $notify), true),
+                'seamless_request_data' => json_decode($transactionService->getDataForCreditCardUi($locale, $amount, $notify, $paymentAction, $additional), true),
                 'vaultCode' => ConfigProvider::CREDITCARD_VAULT_CODE
             ]
         ];
@@ -225,17 +250,33 @@ class ConfigProvider implements ConfigProviderInterface
      * @param $paymentMethodName
      * @return array
      */
-    private function getConfigForUpi($paymentMethodName, $quote)
+    private function getConfigForUpi($paymentMethodName)
     {
         $locale = $this->store->getLocale();
         $transactionService = $this->transactionServiceFactory->create('unionpayinternational');
-        $amount = new Amount($quote->getGrandTotal(), $quote->getQuoteCurrencyCode());
         $wdBaseUrl = $this->urlBuilder->getRouteUrl('wirecard_elasticengine');
         $notify = $wdBaseUrl . 'frontend/notify';
+        $amount = null;
+        $additional = [];
+
+        if($this->checkoutSession->getQuote() instanceof Quote) {
+            $amount = new Amount(
+                $this->checkoutSession->getQuote()->getGrandTotal(),
+                $this->checkoutSession->getQuote()->getQuoteCurrencyCode()
+            );
+            $additional = ['orderId' => $this->checkoutSession->getQuote()->getReservedOrderId()];
+        }
+
+        $paymentAction = $this->scopeConfig->getValue('payment/wirecard_elasticengine_unionpayinternational/payment_action', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        if ('authorize_capture' == $paymentAction) {
+            $paymentAction = 'purchase';
+        } else {
+            $paymentAction = 'authorization';
+        }
         return [
             $paymentMethodName => [
                 'logo_url' => $this->getLogoUrl($paymentMethodName),
-                'seamless_request_data' => json_decode($transactionService->getDataForUpiUi($locale, $amount, $notify), true)
+                'seamless_request_data' => json_decode($transactionService->getDataForUpiUi($locale, $amount, $notify, $paymentAction, $additional), true)
             ]
         ];
     }
