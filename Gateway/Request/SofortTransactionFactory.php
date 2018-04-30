@@ -31,11 +31,14 @@
 
 namespace Wirecard\ElasticEngine\Gateway\Request;
 
+use Magento\Checkout\Model\Session;
+use Magento\Customer\Model\Log;
 use Magento\Framework\Locale\ResolverInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Gateway\ConfigInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Psr\Log\LoggerInterface;
 use Wirecard\PaymentSdk\Exception\MandatoryFieldMissingException;
 use Wirecard\PaymentSdk\Transaction\SofortTransaction;
 use Wirecard\PaymentSdk\Transaction\Transaction;
@@ -60,6 +63,8 @@ class SofortTransactionFactory extends TransactionFactory
      * @param BasketFactory $basketFactory
      * @param AccountHolderFactory $accountHolderFactory
      * @param ConfigInterface $methodConfig
+     * @param Session $session
+     * @param LoggerInterface $logger
      */
     public function __construct(
         UrlInterface $urlBuilder,
@@ -68,9 +73,11 @@ class SofortTransactionFactory extends TransactionFactory
         Transaction $transaction,
         BasketFactory $basketFactory,
         AccountHolderFactory $accountHolderFactory,
-        ConfigInterface $methodConfig
+        ConfigInterface $methodConfig,
+        Session $session,
+        LoggerInterface $logger
     ) {
-        parent::__construct($urlBuilder, $resolver, $transaction, $methodConfig, $storeManager, $accountHolderFactory, $basketFactory);
+        parent::__construct($urlBuilder, $resolver, $transaction, $methodConfig, $storeManager, $accountHolderFactory, $basketFactory, $session, $logger);
     }
 
     /**

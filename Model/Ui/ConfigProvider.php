@@ -39,6 +39,7 @@ use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Asset\Repository;
 use Magento\Payment\Helper\Data;
 use Magento\Quote\Model\Quote;
+use Psr\Log\LoggerInterface;
 use Wirecard\ElasticEngine\Gateway\Service\TransactionServiceFactory;
 use Wirecard\PaymentSdk\Entity\Amount;
 use Wirecard\PaymentSdk\Entity\IdealBic;
@@ -91,6 +92,8 @@ class ConfigProvider implements ConfigProviderInterface
 
     protected $scopeConfig;
 
+    protected $logger;
+
     /**
      * ConfigProvider constructor.
      * @param TransactionServiceFactory $transactionServiceFactory
@@ -101,7 +104,7 @@ class ConfigProvider implements ConfigProviderInterface
      * @param UrlInterface $urlBuilder
      * @param ScopeConfigInterface $scopeConfig
      */
-    public function __construct(TransactionServiceFactory $transactionServiceFactory, Repository $assetRepo, Data $paymentHelper, Session $session, Resolver $store, UrlInterface $urlBuilder, ScopeConfigInterface $scopeConfig)
+    public function __construct(TransactionServiceFactory $transactionServiceFactory, Repository $assetRepo, Data $paymentHelper, Session $session, Resolver $store, UrlInterface $urlBuilder, ScopeConfigInterface $scopeConfig, LoggerInterface $logger)
     {
         $this->transactionServiceFactory = $transactionServiceFactory;
         $this->assetRepository = $assetRepo;
@@ -110,6 +113,7 @@ class ConfigProvider implements ConfigProviderInterface
         $this->store = $store;
         $this->urlBuilder = $urlBuilder;
         $this->scopeConfig = $scopeConfig;
+        $this->logger = $logger;
     }
 
     /**
@@ -119,9 +123,6 @@ class ConfigProvider implements ConfigProviderInterface
      */
     public function getConfig()
     {
-        if($this->checkoutSession->getQuote() instanceof Quote && !$this->checkoutSession->getQuote()->getReservedOrderId()) {
-            $this->checkoutSession->getQuote()->reserveOrderId();
-        }
         return [
             'payment' => $this->getConfigForPaymentMethod(self::PAYPAL_CODE) +
                 $this->getConfigForCreditCardWithVault(self::CREDITCARD_CODE) +
@@ -199,7 +200,8 @@ class ConfigProvider implements ConfigProviderInterface
                 $this->checkoutSession->getQuote()->getGrandTotal(),
                 $this->checkoutSession->getQuote()->getQuoteCurrencyCode()
             );
-            $additional = ['orderId' => $this->checkoutSession->getQuote()->getReservedOrderId()];
+            $this->logger->debug('quoteId: ' . $this->checkoutSession->getQuoteId());
+            $additional = ['quoteId' => $this->checkoutSession->getQuoteId()];
         }
 
 	    return [
@@ -228,7 +230,8 @@ class ConfigProvider implements ConfigProviderInterface
                 $this->checkoutSession->getQuote()->getGrandTotal(),
                 $this->checkoutSession->getQuote()->getQuoteCurrencyCode()
             );
-            $additional = ['orderId' => $this->checkoutSession->getQuote()->getReservedOrderId()];
+            $this->logger->debug('quoteId: ' . $this->checkoutSession->getQuoteId());
+            $additional = ['quoteId' => $this->checkoutSession->getQuoteId()];
         }
 
         $paymentAction = $this->scopeConfig->getValue('payment/wirecard_elasticengine_creditcard/payment_action', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
@@ -264,7 +267,8 @@ class ConfigProvider implements ConfigProviderInterface
                 $this->checkoutSession->getQuote()->getGrandTotal(),
                 $this->checkoutSession->getQuote()->getQuoteCurrencyCode()
             );
-            $additional = ['orderId' => $this->checkoutSession->getQuote()->getReservedOrderId()];
+            $this->logger->debug('quoteId: ' . $this->checkoutSession->getQuoteId());
+            $additional = ['quoteId' => $this->checkoutSession->getQuoteId()];
         }
 
         $paymentAction = $this->scopeConfig->getValue('payment/wirecard_elasticengine_unionpayinternational/payment_action', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);

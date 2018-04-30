@@ -31,6 +31,7 @@
 
 namespace Wirecard\ElasticEngine\Gateway\Request;
 
+use Magento\Checkout\Model\Session;
 use Magento\Framework\Locale\ResolverInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Gateway\ConfigInterface;
@@ -38,6 +39,7 @@ use Magento\Payment\Gateway\Data\OrderAdapterInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Sales\Model\Order\Payment;
 use Magento\Store\Model\StoreManagerInterface;
+use Psr\Log\LoggerInterface;
 use Wirecard\PaymentSdk\Entity\Amount;
 use Wirecard\PaymentSdk\Entity\CustomField;
 use Wirecard\PaymentSdk\Entity\CustomFieldCollection;
@@ -101,6 +103,10 @@ class TransactionFactory
      */
     protected $basketFactory;
 
+    protected $checkoutSession;
+
+    protected $logger;
+
     /**
      * TransactionFactory constructor.
      * @param UrlInterface $urlBuilder
@@ -110,6 +116,7 @@ class TransactionFactory
      * @param StoreManagerInterface $storeManager
      * @param AccountHolderFactory $accountHolderFactory
      * @param BasketFactory $basketFactory
+     * @param Session $checkoutSession
      */
     public function __construct(
         UrlInterface $urlBuilder,
@@ -118,7 +125,9 @@ class TransactionFactory
         ConfigInterface $methodConfig,
         StoreManagerInterface $storeManager,
         AccountHolderFactory $accountHolderFactory,
-        BasketFactory $basketFactory
+        BasketFactory $basketFactory,
+        Session $checkoutSession,
+        LoggerInterface $logger
     ) {
         $this->urlBuilder = $urlBuilder;
         $this->resolver = $resolver;
@@ -127,6 +136,8 @@ class TransactionFactory
         $this->storeManager = $storeManager;
         $this->accountHolderFactory = $accountHolderFactory;
         $this->basketFactory = $basketFactory;
+        $this->checkoutSession = $checkoutSession;
+        $this->logger = $logger;
     }
 
     /**

@@ -31,11 +31,13 @@
 
 namespace Wirecard\ElasticEngine\Gateway\Request;
 
+use Magento\Checkout\Model\Session;
 use Magento\Framework\Locale\ResolverInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Gateway\ConfigInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Psr\Log\LoggerInterface;
 use Wirecard\ElasticEngine\Observer\CreditCardDataAssignObserver;
 use Wirecard\PaymentSdk\Entity\CustomField;
 use Wirecard\PaymentSdk\Entity\CustomFieldCollection;
@@ -66,6 +68,8 @@ class CreditCardTransactionFactory extends TransactionFactory
      * @param BasketFactory $basketFactory
      * @param AccountHolderFactory $accountHolderFactory
      * @param ConfigInterface $methodConfig
+     * @param Session $session
+     * @param LoggerInterface $logger
      */
     public function __construct(
         UrlInterface $urlBuilder,
@@ -74,9 +78,11 @@ class CreditCardTransactionFactory extends TransactionFactory
         Transaction $transaction,
         BasketFactory $basketFactory,
         AccountHolderFactory $accountHolderFactory,
-        ConfigInterface $methodConfig
+        ConfigInterface $methodConfig,
+        Session $session,
+        LoggerInterface $logger
     ) {
-        parent::__construct($urlBuilder, $resolver, $transaction, $methodConfig, $storeManager, $accountHolderFactory, $basketFactory);
+        parent::__construct($urlBuilder, $resolver, $transaction, $methodConfig, $storeManager, $accountHolderFactory, $basketFactory, $session, $logger);
     }
 
     /**
@@ -87,10 +93,9 @@ class CreditCardTransactionFactory extends TransactionFactory
      */
     public function create($commandSubject)
     {
-        parent::create($commandSubject);
-
         /** @var PaymentDataObjectInterface $payment */
         $paymentDO = $commandSubject[self::PAYMENT];
+        $paymentDO->getPayment()->setAdditionalInformation('quoteId', $this->checkoutSession->getQuoteId());
         $jsResponse = $paymentDO->getPayment()->getAdditionalInformation();
 
         return $jsResponse;

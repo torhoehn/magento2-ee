@@ -37,6 +37,8 @@ use Magento\Framework\UrlInterface;
 use Magento\Payment\Gateway\ConfigInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Wirecard\PaymentSdk\Entity\Amount;
 use Wirecard\PaymentSdk\Exception\MandatoryFieldMissingException;
 use Wirecard\PaymentSdk\Transaction\Operation;
@@ -57,11 +59,6 @@ class RatepayInvoiceTransactionFactory extends TransactionFactory
     protected $transaction;
 
     /**
-     * @var Session
-     */
-    private $checkoutSession;
-
-    /**
      * RatepayInvoiceTransactionFactory constructor.
      * @param UrlInterface $urlBuilder
      * @param ResolverInterface $resolver
@@ -80,9 +77,10 @@ class RatepayInvoiceTransactionFactory extends TransactionFactory
         BasketFactory $basketFactory,
         AccountHolderFactory $accountHolderFactory,
         ConfigInterface $methodConfig,
-        Session $session
+        Session $session,
+        LoggerInterface $logger
     ) {
-        parent::__construct($urlBuilder, $resolver, $transaction, $methodConfig, $storeManager, $accountHolderFactory, $basketFactory);
+        parent::__construct($urlBuilder, $resolver, $transaction, $methodConfig, $storeManager, $accountHolderFactory, $basketFactory, $session, $logger);
 
         $this->checkoutSession = $session;
     }

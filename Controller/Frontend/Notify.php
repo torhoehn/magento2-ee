@@ -178,10 +178,19 @@ class Notify extends Action
         $this->logger->info('Notification response is instance of: ' . get_class($response));
 
         //retrieve order id from response
-        $orderId = $response->getCustomFields()->get('orderId');
+        $customFields = $response->getCustomFields();
+        $this->logger->debug('customfields: ' . print_r($customFields, true));
+        $orderId = $customFields->get('orderId');
 
         try {
-            $order = $this->getOrderByIncrementId($orderId);
+            if(!is_null($customFields->get('quoteId'))) {
+               $quoteId = $customFields->get('quoteId');
+               $this->logger->debug('quoteId is here');
+               $order = $this->getOrderByQuoteId($quoteId);
+               $this->logger->debug('real order id: ' . $order->getId());
+            } else {
+                $order = $this->getOrderByIncrementId($orderId);
+            }
         } catch (NoSuchEntityException $e) {
             $this->logger->warning(sprintf('Order with orderID %s not found.', $orderId));
             return;
@@ -304,6 +313,35 @@ class Notify extends Action
         }
 
         $orders = $result->getItems();
+
+        return reset($orders);
+    }
+
+    /**
+     * @param $quoteId
+     * @throws NoSuchEntityException
+     * @return Order
+     */
+    private function getOrderByQuoteId($quoteId)
+    {
+        $this->logger->debug('search by quote');
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter(
+            OrderInterface::QUOTE_ID,
+            $quoteId
+        )->create();
+        $this->logger->debug('before getlist');
+        $result = $this->orderRepository->getList($searchCriteria);
+        $this->logger->debug('after getlist');
+        $this->logger->debug(print_r($result, true));
+
+        if (empty($result->getItems())) {
+            throw new NoSuchEntityException(__('No such order.'));
+        }
+        $this->logger->debug('after getItems');
+        $this->logger->debug(print_r($result->getItems(), true));
+
+        $orders = $result->getItems();
+        $this->logger->debug('after search');
 
         return reset($orders);
     }
