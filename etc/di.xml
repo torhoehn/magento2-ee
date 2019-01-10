@@ -82,7 +82,7 @@
             <argument name="validatorPool" xsi:type="object">SepaCreditValidatorPool</argument>
         </arguments>
     </virtualType>
-    <virtualType name="SofortFacade" type="Magento\Payment\Model\Method\Adapter">
+    <virtualType name="PGSofortFacade" type="Magento\Payment\Model\Method\Adapter">
         <arguments>
             <argument name="code" xsi:type="const">Wirecard\ElasticEngine\Model\Ui\ConfigProvider::SOFORT_CODE</argument>
             <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form\Cc</argument>
