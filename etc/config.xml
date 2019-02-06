@@ -216,7 +216,7 @@ BQnWHd2Us5b/ep7LME9hZ8u3hu/Kc6Vk24c5p3WUOiyaTiw+Ym3QDXl1wBSl9DdM
                 <can_use_checkout>1</can_use_checkout>
                 <is_gateway>1</is_gateway>
                 <sort_order>1</sort_order>
-                <model>SofortFacade</model>
+                <model>PGSofortFacade</model>
                 <order_status>processing</order_status>
                 <payment_action>debit</payment_action>
                 <merchant_account_id>6c0e7efd-ee58-40f7-9bbd-5e7337a052cd</merchant_account_id>
