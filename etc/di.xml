@@ -91,9 +91,9 @@
             <argument name="code" xsi:type="const">Wirecard\ElasticEngine\Model\Ui\ConfigProvider::SOFORT_CODE</argument>
             <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form\Cc</argument>
             <argument name="infoBlockType" xsi:type="string">Magento\Payment\Block\ConfigurableInfo</argument>
-            <argument name="valueHandlerPool" xsi:type="object">SofortValueHandlerPool</argument>
-            <argument name="validatorPool" xsi:type="object">SofortValidatorPool</argument>
-            <argument name="commandPool" xsi:type="object">SofortCommandPool</argument>
+            <argument name="valueHandlerPool" xsi:type="object">PGSofortValueHandlerPool</argument>
+            <argument name="validatorPool" xsi:type="object">PGSofortValidatorPool</argument>
+            <argument name="commandPool" xsi:type="object">PGSofortCommandPool</argument>
         </arguments>
     </virtualType>
     <virtualType name="IdealFacade" type="Magento\Payment\Model\Method\Adapter">
@@ -248,14 +248,14 @@
         </arguments>
     </virtualType>
 
-    <virtualType name="SofortValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+    <virtualType name="PGSofortValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
         <arguments>
             <argument name="handlers" xsi:type="array">
-                <item name="default" xsi:type="string">SofortConfigValueHandler</item>
+                <item name="default" xsi:type="string">PGSofortConfigValueHandler</item>
             </argument>
         </arguments>
     </virtualType>
-    <virtualType name="SofortConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+    <virtualType name="PGSofortConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
         <arguments>
             <argument name="configInterface" xsi:type="object">WirecardSofortConfig</argument>
         </arguments>
@@ -490,7 +490,7 @@
         </arguments>
     </virtualType>
 
-    <virtualType name="SofortValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
+    <virtualType name="PGSofortValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
         <arguments>
             <argument name="validators" xsi:type="array">
             </argument>
@@ -683,15 +683,15 @@
         </arguments>
     </virtualType>
 
-    <virtualType name="SofortCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
+    <virtualType name="PGSofortCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="initialize" xsi:type="string">SofortInitializeCommand</item>
-                <item name="refund" xsi:type="string">SofortRefundCommand</item>
+                <item name="initialize" xsi:type="string">PGSofortInitializeCommand</item>
+                <item name="refund" xsi:type="string">PGSofortRefundCommand</item>
             </argument>
         </arguments>
     </virtualType>
-    <virtualType name="SofortRefundCommand" type="Wirecard\ElasticEngine\Gateway\Command\WirecardRefundCommand">
+    <virtualType name="PGSofortRefundCommand" type="Wirecard\ElasticEngine\Gateway\Command\WirecardRefundCommand">
         <arguments>
             <argument name="transactionFactory" xsi:type="object">SepaCreditTransactionFactory</argument>
             <argument name="transactionServiceFactory" xsi:type="object">TransactionServiceFactory</argument>
@@ -699,7 +699,7 @@
             <argument name="methodConfig" xsi:type="object">WirecardSepaCreditConfig</argument>
         </arguments>
     </virtualType>
-    <virtualType name="SofortInitializeCommand" type="Wirecard\ElasticEngine\Gateway\Command\WirecardCommand">
+    <virtualType name="PGSofortInitializeCommand" type="Wirecard\ElasticEngine\Gateway\Command\WirecardCommand">
         <arguments>
             <argument name="transactionFactory" xsi:type="object">SofortTransactionFactory</argument>
             <argument name="transactionServiceFactory" xsi:type="object">TransactionServiceFactory</argument>
