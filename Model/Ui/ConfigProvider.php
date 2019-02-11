@@ -183,7 +183,7 @@ class ConfigProvider implements ConfigProviderInterface
     {
         $method = $this->paymentHelper->getMethodInstance(self::CREDITCARD_CODE);
         $baseUrl = $method->getConfigData('base_url');
-        $transactionService = $this->transactionServiceFactory->create('creditcard');
+        $transactionService = $this->transactionServiceFactory->create('maestro');
         $language = $this->getSupportedHppLangCode($baseUrl);
         $amount = new Amount(0, $this->storeManager->getStore()->getCurrentCurrency()->getCode());
         return [

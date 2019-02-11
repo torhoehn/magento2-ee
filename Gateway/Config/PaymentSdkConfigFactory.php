@@ -42,6 +42,7 @@ use Wirecard\PaymentSdk\Config\PaymentMethodConfig;
 use Wirecard\PaymentSdk\Config\SepaConfig;
 use Wirecard\PaymentSdk\Entity\Amount;
 use Wirecard\PaymentSdk\Transaction\CreditCardTransaction;
+use Wirecard\PaymentSdk\Transaction\MaestroTransaction;
 use Wirecard\PaymentSdk\Transaction\SepaCreditTransferTransaction;
 use Wirecard\PaymentSdk\Transaction\SepaDirectDebitTransaction;
 
@@ -114,7 +115,7 @@ class PaymentSdkConfigFactory implements ConfigFactoryInterface
             $methodConfig->getValue('http_user'),
             $methodConfig->getValue('http_pass')
         );
-        if ($paymentCode === CreditCardTransaction::NAME) {
+        if ($paymentCode === CreditCardTransaction::NAME || $paymentCode === MaestroTransaction::NAME) {
             $paymentMethod = $this->getCreditCardConfig($methodConfig);
         } elseif (($paymentCode === SepaDirectDebitTransaction::NAME)
             || ($paymentCode === SepaCreditTransferTransaction::NAME)) {

@@ -1126,6 +1126,7 @@
             <argument name="methodConfigs" xsi:type="array">
                 <item name="paypal" xsi:type="object">WirecardPaypalConfig</item>
                 <item name="creditcard" xsi:type="object">WirecardCreditCardConfig</item>
+                <item name="maestro" xsi:type="object">WirecardMaestroConfig</item>
                 <item name="sepadirectdebit" xsi:type="object">WirecardSepaConfig</item>
                 <item name="sepacredit" xsi:type="object">WirecardSepaCreditConfig</item>
                 <item name="sofortbanking" xsi:type="object">WirecardSofortConfig</item>
